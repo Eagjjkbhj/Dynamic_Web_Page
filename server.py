@@ -2,6 +2,7 @@ import asyncio
 import json
 import time
 import pprint
+#import client
 
 
 ROUTES = {
@@ -27,6 +28,9 @@ CONTENT_TYPE = {
 
 MIDDLEWARES = []
 
+def home(request, response):
+  return send_html_handler(request, response, request["path"])
+
 def add_route(method, path, func):
     """ADD ROUTES
     Build ROUTES
@@ -44,11 +48,13 @@ async def worker(data):
     Accept requests and invoke request handler
     """
     request = {}
-    header_str = data["header"].split("\r\n\r\n")[0]
+    header_str = data["header"].split("\r\n")[0]
     if not header_str:
+        #print("worker error")
         return err_404_handler(request, {})
     request = header_parser(request, header_str)
     request["body"] = data["content"]
+    #print("WORKER REQUESTU:",request)
     if request:
         result = await request_handler(request)
         return result
@@ -88,11 +94,14 @@ def header_parser(request, header_str):
     """
     header_list = header_str.split("\r\n")
     first = header_list.pop(0)
+    
     status_line = first.split()
     request["method"], request["path"], request["protocol"] = status_line
     if "?" in request["path"]:
         request["path"], request["content"] = get_content(request)
     request["header"] = get_header(header_list)
+    #print("HURRAY:",request["path"])
+    #print("hurray header:",request["header"])
     return request
 
 
@@ -169,6 +178,7 @@ def method_handler(request, response):
         "DELETE": delete_handler,
         "PUT": put_handler
     }
+    add_route('get',request["path"],home)
     handler = METHOD[request["method"]]
     return handler(request, response)
 
@@ -176,6 +186,7 @@ def method_handler(request, response):
 def get_handler(request, response):
     """HTTP GET Handler"""
     try:
+        #print("FINAL ROUTES",ROUTES)
         return ROUTES["get"][request["path"]](request, response)
     except KeyError:
         return static_file_handler(request, response)
@@ -286,6 +297,7 @@ def send_html_handler(request, response, content):
         res = ok_200_handler(request, response)
         return res
     else:
+        print("send html error")
         return err_404_handler(request, response)
 
 
@@ -340,6 +352,7 @@ async def handle_connections(reader, writer):
     if content_length:
         content = await reader.readexactly(content_length)
         data["content"] = content
+        print("data[content] is:",data["content"])
     response = await worker(data)
     writer.write(response)
     await writer.drain()
