@@ -4,19 +4,16 @@ Functional web server in Python 3.5 using the asyncio module.
 
 ## Install
 
-Copy the `server.py` file to your working folder.
+Copy the `server.py` and 'client.py' files to your working folder.
 
 ## How to use:
 
-Static files have to be enclosed in 'public' directory under root.
+Run the client.py program in the terminal
+Once the server started, in the browswer type http://localhost:8080/ and a path. This will display path in the webpage
+For eg.
+If you type http://localhost:8080/howareyou then 'howareyou' will be displayed in the webpage.
 
-```
-/
-public/
-    js/
-    img/
-    css/
-```
+If you want to create the client program yourself please follow the steps below:
 
 To map the dynamic pages, use the function `server.add_route()` which takes 3 parameters
 
